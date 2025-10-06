@@ -25,8 +25,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.security.auth.callback.CallbackHandler;
-
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.crypto.CryptoType;
 import org.apache.wss4j.common.ext.WSSecurityException;
@@ -36,7 +34,6 @@ import org.apache.wss4j.common.util.DOM2Writer;
 import org.apache.wss4j.common.util.InetAddressUtils;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
 import org.apache.xml.security.utils.XMLUtils;
-import org.joda.time.DateTime;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.saml.common.SAMLObject;
 import org.opensaml.saml.common.SAMLObjectContentReference;
@@ -147,7 +144,7 @@ public class SamlAssertionWrapper {
 
     /**
      * Constructor SamlAssertionWrapper creates a new SamlAssertionWrapper instance.
-     * This is the primary constructor.  All other constructor calls should
+     * This is the primary constructor. All other constructor calls should
      * be routed to this method to ensure that the wrapper is initialized
      * correctly.
      *
@@ -260,33 +257,19 @@ public class SamlAssertionWrapper {
     }
 
     public Instant getNotBefore() {
-        DateTime validFrom = null;
         if (getSamlVersion().equals(SAMLVersion.VERSION_20)) {
-            validFrom = getSaml2().getConditions().getNotBefore();
+            return getSaml2().getConditions().getNotBefore();
         } else {
-            validFrom = getSaml1().getConditions().getNotBefore();
+            return getSaml1().getConditions().getNotBefore();
         }
-
-        // Now convert to a Java Instant Object
-        if (validFrom != null) {
-            return validFrom.toDate().toInstant();
-        }
-        return null;
     }
 
     public Instant getNotOnOrAfter() {
-        DateTime validTill = null;
         if (getSamlVersion().equals(SAMLVersion.VERSION_20)) {
-            validTill = getSaml2().getConditions().getNotOnOrAfter();
+            return getSaml2().getConditions().getNotOnOrAfter();
         } else {
-            validTill = getSaml1().getConditions().getNotOnOrAfter();
+            return getSaml1().getConditions().getNotOnOrAfter();
         }
-
-        // Now convert to a Java Instant Object
-        if (validTill != null) {
-            return validTill.toDate().toInstant();
-        }
-        return null;
     }
 
     /**
@@ -408,12 +391,12 @@ public class SamlAssertionWrapper {
                         XMLObject data = confirmation.getSubjectConfirmationData();
                         if (data instanceof ConfirmationMethod) {
                             ConfirmationMethod method = (ConfirmationMethod) data;
-                            methods.add(method.getConfirmationMethod());
+                            methods.add(method.getURI());
                         }
                         List<ConfirmationMethod> confirmationMethods =
                             confirmation.getConfirmationMethods();
                         for (ConfirmationMethod confirmationMethod : confirmationMethods) {
-                            methods.add(confirmationMethod.getConfirmationMethod());
+                            methods.add(confirmationMethod.getURI());
                         }
                     }
                 }
@@ -428,12 +411,9 @@ public class SamlAssertionWrapper {
      * @return the signed (type boolean) of this SamlAssertionWrapper object.
      */
     public boolean isSigned() {
-        if (samlObject instanceof SignableSAMLObject
+        return samlObject instanceof SignableSAMLObject
             && (((SignableSAMLObject)samlObject).isSigned()
-                || ((SignableSAMLObject)samlObject).getSignature() != null)) {
-            return true;
-        }
-        return false;
+                || ((SignableSAMLObject)samlObject).getSignature() != null);
     }
 
     /**
@@ -688,20 +668,17 @@ public class SamlAssertionWrapper {
      */
     public void parseSubject(
         SAMLKeyInfoProcessor keyInfoProcessor,
-        Crypto sigCrypto,
-        CallbackHandler callbackHandler
+        Crypto sigCrypto
     ) throws WSSecurityException {
         if (samlVersion == SAMLVersion.VERSION_11) {
             subjectKeyInfo =
                 SAMLUtil.getCredentialFromSubject(
-                    (org.opensaml.saml.saml1.core.Assertion)samlObject, keyInfoProcessor,
-                    sigCrypto, callbackHandler
+                    (org.opensaml.saml.saml1.core.Assertion)samlObject, keyInfoProcessor, sigCrypto
                 );
         } else if (samlVersion == SAMLVersion.VERSION_20) {
             subjectKeyInfo =
                 SAMLUtil.getCredentialFromSubject(
-                    (org.opensaml.saml.saml2.core.Assertion)samlObject, keyInfoProcessor,
-                    sigCrypto, callbackHandler
+                    (org.opensaml.saml.saml2.core.Assertion)samlObject, keyInfoProcessor, sigCrypto
                 );
         }
     }
@@ -769,7 +746,7 @@ public class SamlAssertionWrapper {
         if (sig != null) {
             return getSignatureValue(sig);
         }
-        return null;
+        return new byte[0];
     }
 
     private byte[] getSignatureValue(Signature signature) throws WSSecurityException {
@@ -787,7 +764,7 @@ public class SamlAssertionWrapper {
             }
         }
 
-        return null;
+        return new byte[0];
     }
 
     public Signature getSignature() throws WSSecurityException {
@@ -805,8 +782,8 @@ public class SamlAssertionWrapper {
      * Check the Conditions of the Assertion.
      */
     public void checkConditions(int futureTTL) throws WSSecurityException {
-        DateTime validFrom = null;
-        DateTime validTill = null;
+        Instant validFrom = null;
+        Instant validTill = null;
 
         if (getSamlVersion().equals(SAMLVersion.VERSION_20)
             && getSaml2().getConditions() != null) {
@@ -819,7 +796,7 @@ public class SamlAssertionWrapper {
         }
 
         if (validFrom != null) {
-            DateTime currentTime = new DateTime();
+            Instant currentTime = Instant.now();
             currentTime = currentTime.plusSeconds(futureTTL);
             if (validFrom.isAfter(currentTime)) {
                 LOG.warn("SAML Token condition (Not Before) not met");
@@ -827,7 +804,7 @@ public class SamlAssertionWrapper {
             }
         }
 
-        if (validTill != null && validTill.isBeforeNow()) {
+        if (validTill != null && validTill.isBefore(Instant.now())) {
             LOG.warn("SAML Token condition (Not On Or After) not met");
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }
@@ -837,8 +814,8 @@ public class SamlAssertionWrapper {
      * Check the IssueInstant value of the Assertion.
      */
     public void checkIssueInstant(int futureTTL, int ttl) throws WSSecurityException {
-        DateTime issueInstant = null;
-        DateTime validTill = null;
+        Instant issueInstant = null;
+        Instant validTill = null;
 
         if (getSamlVersion().equals(SAMLVersion.VERSION_20)
             && getSaml2().getConditions() != null) {
@@ -852,7 +829,7 @@ public class SamlAssertionWrapper {
 
         // Check the IssueInstant is not in the future, subject to the future TTL
         if (issueInstant != null) {
-            DateTime currentTime = new DateTime().plusSeconds(futureTTL);
+            Instant currentTime = Instant.now().plusSeconds(futureTTL);
             if (issueInstant.isAfter(currentTime)) {
                 LOG.warn("SAML Token IssueInstant not met");
                 throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
@@ -860,7 +837,7 @@ public class SamlAssertionWrapper {
 
             // If there is no NotOnOrAfter, then impose a TTL on the IssueInstant.
             if (validTill == null) {
-                currentTime = new DateTime().minusSeconds(ttl);
+                currentTime = currentTime.minusSeconds(ttl);
 
                 if (issueInstant.isBefore(currentTime)) {
                     LOG.warn("SAML Token IssueInstant not met. The assertion was created too long ago.");
@@ -891,7 +868,7 @@ public class SamlAssertionWrapper {
                         List<org.opensaml.saml.saml2.core.Audience> audiences =
                             audienceRestriction.getAudiences();
                         for (org.opensaml.saml.saml2.core.Audience audience : audiences) {
-                            String audienceURI = audience.getAudienceURI();
+                            String audienceURI = audience.getURI();
                             if (audienceRestrictions.contains(audienceURI)) {
                                 foundAddress = true;
                                 break;
@@ -915,7 +892,7 @@ public class SamlAssertionWrapper {
                         List<org.opensaml.saml.saml1.core.Audience> audiences =
                             audienceRestriction.getAudiences();
                         for (org.opensaml.saml.saml1.core.Audience audience : audiences) {
-                            String audienceURI = audience.getUri();
+                            String audienceURI = audience.getURI();
                             if (audienceRestrictions.contains(audienceURI)) {
                                 foundAddress = true;
                                 break;
@@ -940,8 +917,8 @@ public class SamlAssertionWrapper {
             List<AuthnStatement> authnStatements = getSaml2().getAuthnStatements();
 
             for (AuthnStatement authnStatement : authnStatements) {
-                DateTime authnInstant = authnStatement.getAuthnInstant();
-                DateTime sessionNotOnOrAfter = authnStatement.getSessionNotOnOrAfter();
+                Instant authnInstant = authnStatement.getAuthnInstant();
+                Instant sessionNotOnOrAfter = authnStatement.getSessionNotOnOrAfter();
                 String subjectLocalityAddress = null;
 
                 if (authnStatement.getSubjectLocality() != null
@@ -958,7 +935,7 @@ public class SamlAssertionWrapper {
                 getSaml1().getAuthenticationStatements();
 
             for (AuthenticationStatement authnStatement : authnStatements) {
-                DateTime authnInstant = authnStatement.getAuthenticationInstant();
+                Instant authnInstant = authnStatement.getAuthenticationInstant();
                 String subjectLocalityAddress = null;
 
                 if (authnStatement.getSubjectLocality() != null
@@ -973,11 +950,11 @@ public class SamlAssertionWrapper {
     }
 
     private void validateAuthnStatement(
-        DateTime authnInstant, DateTime sessionNotOnOrAfter, String subjectLocalityAddress,
+        Instant authnInstant, Instant sessionNotOnOrAfter, String subjectLocalityAddress,
         int futureTTL
     ) throws WSSecurityException {
         // AuthnInstant in the future
-        DateTime currentTime = new DateTime();
+        Instant currentTime = Instant.now();
         currentTime = currentTime.plusSeconds(futureTTL);
         if (authnInstant.isAfter(currentTime)) {
             LOG.warn("SAML Token AuthnInstant not met");
@@ -985,7 +962,7 @@ public class SamlAssertionWrapper {
         }
 
         // Stale SessionNotOnOrAfter
-        if (sessionNotOnOrAfter != null && sessionNotOnOrAfter.isBeforeNow()) {
+        if (sessionNotOnOrAfter != null && sessionNotOnOrAfter.isBefore(Instant.now())) {
             LOG.warn("SAML Token SessionNotOnOrAfter not met");
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, "invalidSAMLsecurity");
         }

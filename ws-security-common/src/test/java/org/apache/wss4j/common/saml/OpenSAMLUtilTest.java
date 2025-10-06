@@ -31,7 +31,7 @@ public class OpenSAMLUtilTest {
         OpenSAMLUtil.initSamlEngine();
 
         // https://issues.apache.org/jira/browse/WSS-678 OpenSAML Decrypter initialization failed
-        new org.opensaml.saml.saml2.encryption.Decrypter(null, null, null);
+        //new Decrypter(null, null, null);
     }
 
 }

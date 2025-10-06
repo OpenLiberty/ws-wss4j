@@ -20,10 +20,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.wss4j</groupId>
+        <groupId>io.openliberty.org.apache.wss4j</groupId>
         <artifactId>wss4j-parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
-        <version>2.4.4-SNAPSHOT</version>
+        <version>2.4.4.1</version>
     </parent>
     <artifactId>wss4j-ws-security-common</artifactId>
     <name>Apache WSS4J WS-Security Common</name>
@@ -96,33 +96,39 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <scope>compile</scope>
+            <version>1.7.36</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.santuario</groupId>
+            <groupId>io.openliberty.org.apache.santuario</groupId>
             <artifactId>xmlsec</artifactId>
+            <version>${xmlsec.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.opensaml</groupId>
+            <groupId>io.openliberty.org.opensaml</groupId>
             <artifactId>opensaml-saml-impl</artifactId>
             <version>${opensaml.version}</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.opensaml</groupId>
+                    <groupId>io.openliberty.org.opensaml</groupId>
                     <artifactId>opensaml-soap-impl</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.opensaml</groupId>
+                    <groupId>io.openliberty.org.opensaml</groupId>
                     <artifactId>opensaml-storage-api</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>org.opensaml</groupId>
+                    <groupId>io.openliberty.org.opensaml</groupId>
                     <artifactId>opensaml-messaging-api</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.velocity</groupId>
-                    <artifactId>velocity</artifactId>
+                    <artifactId>velocity-engine-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpcore</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.httpcomponents</groupId>
@@ -141,25 +147,16 @@
                     <artifactId>cryptacular</artifactId>
                 </exclusion>
                 <exclusion>
-                    <groupId>joda-time</groupId>
-                    <artifactId>joda-time</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15on</artifactId>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.cryptacular</groupId>
             <artifactId>cryptacular</artifactId>
             <version>${cryptacular.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>${joda.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -195,15 +192,57 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.opensaml</groupId>
+            <groupId>io.openliberty.org.opensaml</groupId>
+            <artifactId>opensaml-core</artifactId>
+            <version>${opensaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.openliberty.org.opensaml</groupId>
+            <artifactId>opensaml-saml-api</artifactId>
+            <version>${opensaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.openliberty.org.opensaml</groupId>
+            <artifactId>opensaml-security-api</artifactId>
+            <version>${opensaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.openliberty.org.opensaml</groupId>
+            <artifactId>opensaml-security-impl</artifactId>
+            <version>${opensaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.openliberty.org.opensaml</groupId>
+            <artifactId>opensaml-xmlsec-api</artifactId>
+            <version>${opensaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.openliberty.org.opensaml</groupId>
+            <artifactId>opensaml-xmlsec-impl</artifactId>
+            <version>${opensaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.openliberty.org.opensaml</groupId>
             <artifactId>opensaml-xacml-impl</artifactId>
             <version>${opensaml.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.opensaml</groupId>
+            <groupId>io.openliberty.org.opensaml</groupId>
             <artifactId>opensaml-xacml-saml-impl</artifactId>
             <version>${opensaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.openliberty.net.shibboleth.utilities</groupId>
+            <artifactId>java-support</artifactId>
+            <version>8.4.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -232,17 +271,20 @@
         <dependency>
             <groupId>org.apache.geronimo.javamail</groupId>
             <artifactId>geronimo-javamail_1.4_mail</artifactId>
+            <version>1.8.4</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
+            <version>5.13.4</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
+            <version>5.13.4</version>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>

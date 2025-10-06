@@ -19,6 +19,8 @@
 
 package org.apache.wss4j.common.saml.builder;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +38,6 @@ import org.apache.wss4j.common.saml.bean.KeyInfoBean;
 import org.apache.wss4j.common.saml.bean.SubjectBean;
 import org.apache.wss4j.common.saml.bean.SubjectLocalityBean;
 import org.apache.xml.security.stax.impl.util.IDGenerator;
-import org.joda.time.DateTime;
 import org.opensaml.core.xml.XMLObject;
 import org.opensaml.core.xml.XMLObjectBuilderFactory;
 import org.opensaml.core.xml.config.XMLObjectProviderRegistrySupport;
@@ -145,7 +146,7 @@ public final class SAML1ComponentBuilder {
             );
         assertion.setVersion(SAMLVersion.VERSION_11);
         assertion.setIssuer(issuer);
-        assertion.setIssueInstant(new DateTime()); // now
+        assertion.setIssueInstant(Instant.now()); // now
         assertion.setID(IDGenerator.generateID("_"));
         return assertion;
     }
@@ -192,7 +193,7 @@ public final class SAML1ComponentBuilder {
             confirmationMethodStr = SAML1Constants.CONF_SENDER_VOUCHES;
         }
 
-        confirmationMethod.setConfirmationMethod(confirmationMethodStr);
+        confirmationMethod.setURI(confirmationMethodStr);
         subjectConfirmation.getConfirmationMethods().add(confirmationMethod);
         if (subjectBean.getKeyInfo() != null) {
             KeyInfo keyInfo = createKeyInfo(subjectBean.getKeyInfo());
@@ -208,7 +209,7 @@ public final class SAML1ComponentBuilder {
      * Create an Opensaml KeyInfo object from the parameters
      * @param keyInfo the KeyInfo bean from which to extract security credentials
      * @return the KeyInfo object
-     * @throws org.opensaml.xml.security.SecurityException
+     * @throws org.opensaml.security.SecurityException
      */
     public static KeyInfo createKeyInfo(KeyInfoBean keyInfo)
         throws org.opensaml.security.SecurityException, WSSecurityException {
@@ -231,6 +232,7 @@ public final class SAML1ComponentBuilder {
                         break;
                     case X509_ISSUER_SERIAL:
                         kiFactory.setEmitX509IssuerSerial(true);
+                        break;
                 }
                 return kiFactory.newInstance().generate(keyInfoCredential);
 
@@ -261,15 +263,15 @@ public final class SAML1ComponentBuilder {
         Conditions conditions = conditionsV1Builder.buildObject();
 
         if (conditionsBean == null) {
-            DateTime newNotBefore = new DateTime();
+            Instant newNotBefore = Instant.now();
             conditions.setNotBefore(newNotBefore);
-            conditions.setNotOnOrAfter(newNotBefore.plusMinutes(5));
+            conditions.setNotOnOrAfter(newNotBefore.plus(Duration.ofMinutes(5)));
             return conditions;
         }
 
         long tokenPeriodSeconds = conditionsBean.getTokenPeriodSeconds();
-        DateTime notBefore = conditionsBean.getNotBefore();
-        DateTime notAfter = conditionsBean.getNotAfter();
+        Instant notBefore = conditionsBean.getNotBefore();
+        Instant notAfter = conditionsBean.getNotAfter();
 
         if (notBefore != null && notAfter != null) {
             if (notBefore.isAfter(notAfter)) {
@@ -280,14 +282,12 @@ public final class SAML1ComponentBuilder {
             conditions.setNotBefore(notBefore);
             conditions.setNotOnOrAfter(notAfter);
         } else {
-            DateTime newNotBefore = new DateTime();
+            Instant newNotBefore = Instant.now();
             conditions.setNotBefore(newNotBefore);
             if (tokenPeriodSeconds <= 0) {
                 tokenPeriodSeconds = 5L * 60L;
             }
-            DateTime notOnOrAfter =
-                new DateTime(newNotBefore.getMillis() + tokenPeriodSeconds * 1000L);
-
+            Instant notOnOrAfter = newNotBefore.plusSeconds(tokenPeriodSeconds);
             conditions.setNotOnOrAfter(notOnOrAfter);
         }
 
@@ -329,7 +329,7 @@ public final class SAML1ComponentBuilder {
             for (String ref : adviceBean.getIdReferences()) {
                 AssertionIDReference assertionIdReference =
                     assertionIDReferenceBuilder.buildObject();
-                assertionIdReference.setReference(ref);
+                assertionIdReference.setValue(ref);
                 advice.getAssertionIDReferences().add(assertionIdReference);
             }
         }
@@ -370,7 +370,7 @@ public final class SAML1ComponentBuilder {
 
         for (String audienceURI : audienceRestrictionBean.getAudienceURIs()) {
             Audience audience = audienceV1Builder.buildObject();
-            audience.setUri(audienceURI);
+            audience.setURI(audienceURI);
             audienceRestriction.getAudiences().add(audience);
         }
         return audienceRestriction;
@@ -413,7 +413,7 @@ public final class SAML1ComponentBuilder {
                         statementBean.getAuthenticationInstant()
                     );
                 } else {
-                    authenticationStatement.setAuthenticationInstant(new DateTime());
+                    authenticationStatement.setAuthenticationInstant(Instant.now());
                 }
 
                 authenticationStatement.setAuthenticationMethod(
@@ -599,7 +599,7 @@ public final class SAML1ComponentBuilder {
 
         Action actionElement = actionElementV1Builder.buildObject();
         actionElement.setNamespace(actionBean.getActionNamespace());
-        actionElement.setContents(actionBean.getContents());
+        actionElement.setValue(actionBean.getContents());
 
         return actionElement;
     }

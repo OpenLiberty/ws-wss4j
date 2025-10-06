@@ -19,11 +19,11 @@
 
 package org.apache.wss4j.dom.handler;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
-
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Random;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.apache.wss4j.common.bsp.BSPRule;
@@ -42,7 +42,6 @@ import org.apache.wss4j.dom.engine.WSSecurityEngine;
 import org.apache.wss4j.dom.engine.WSSecurityEngineResult;
 import org.apache.wss4j.dom.message.WSSecHeader;
 import org.apache.wss4j.dom.message.token.SignatureConfirmation;
-import org.apache.wss4j.dom.util.WSSecurityUtil;
 
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
@@ -288,7 +287,9 @@ public class SignatureConfirmationTest {
         WSSecHeader secHeader = new WSSecHeader(doc);
         secHeader.insertSecurityHeader();
 
-        byte[] randomBytes = WSSecurityUtil.generateNonce(20);
+        Random random = new Random();
+        byte[] randomBytes = new byte[20];
+        random.nextBytes(randomBytes);
         SignatureConfirmation sigConf = new SignatureConfirmation(doc, randomBytes);
         Element sigConfElement = sigConf.getElement();
         secHeader.getSecurityHeaderElement().appendChild(sigConfElement);

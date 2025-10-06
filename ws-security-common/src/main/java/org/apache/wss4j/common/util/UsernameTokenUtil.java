@@ -92,18 +92,18 @@ public final class UsernameTokenUtil {
      * This static method generates a derived key as defined in WSS Username
      * Token Profile.
      *
-     * @param password The password to include in the key generation
-     * @param salt The Salt value
-     * @param iteration The Iteration value. If zero (0) is given the method uses the
+     * @param password  The password to include in the key generation
+     * @param salt      The Salt value
+     * @param iteration The Iteration value. If zero (0) is given the method uses
+     *                  the
      *                  default value
      * @return Returns the derived key a byte array
      * @throws WSSecurityException
      */
     public static byte[] generateDerivedKey(
-        String password,
-        byte[] salt,
-        int iteration
-    ) throws WSSecurityException {
+            String password,
+            byte[] salt,
+            int iteration) throws WSSecurityException {
         return generateDerivedKey(password.getBytes(StandardCharsets.UTF_8), salt, iteration);
     }
 
@@ -120,7 +120,7 @@ public final class UsernameTokenUtil {
             saltValue = generateNonce(16);
         } catch (WSSecurityException ex) {
             LOG.debug(ex.getMessage(), ex);
-            return null;
+            return new byte[0]; // Liberty Change: Backport 4.x
         }
         if (useForMac) {
             saltValue[0] = 0x01;
@@ -131,19 +131,19 @@ public final class UsernameTokenUtil {
     }
 
     /**
-     * Generate a nonce of the given length using the SHA1PRNG algorithm. The SecureRandom
+     * Generate a nonce of the given length using a secure random algorithm. The
+     * SecureRandom
      * instance that backs this method is cached for efficiency.
      *
      * @return a nonce of the given length
      * @throws WSSecurityException
      */
-    private static byte[] generateNonce(int length) throws WSSecurityException {
+    public static byte[] generateNonce(int length) throws WSSecurityException { // Liberty Change: Backport 4.x
         try {
             return XMLSecurityConstants.generateBytes(length);
         } catch (Exception ex) {
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILURE, ex,
-                    "empty", new Object[] {"Error in generating nonce of length " + length}
-            );
+                    "empty", new Object[] {"Error in generating nonce of length " + length });
         }
     }
 
@@ -182,23 +182,20 @@ public final class UsernameTokenUtil {
      * Get the raw (plain text) password used to compute secret key.
      */
     public static String getRawPassword(CallbackHandler callbackHandler, String username,
-                                        String password, String passwordType) throws WSSecurityException {
+            String password, String passwordType) throws WSSecurityException {
         if (callbackHandler == null) {
             LOG.debug("CallbackHandler is null");
             throw new WSSecurityException(WSSecurityException.ErrorCode.FAILED_AUTHENTICATION);
         }
 
-        WSPasswordCallback pwCb =
-            new WSPasswordCallback(
-                username, password, passwordType, WSPasswordCallback.USERNAME_TOKEN
-            );
+        WSPasswordCallback pwCb = new WSPasswordCallback(
+                username, password, passwordType, WSPasswordCallback.USERNAME_TOKEN);
         try {
-            callbackHandler.handle(new Callback[]{pwCb});
+            callbackHandler.handle(new Callback[] {pwCb });
         } catch (IOException | UnsupportedCallbackException e) {
             LOG.debug(e.getMessage(), e);
             throw new WSSecurityException(
-                WSSecurityException.ErrorCode.FAILED_AUTHENTICATION, e
-            );
+                    WSSecurityException.ErrorCode.FAILED_AUTHENTICATION, e);
         }
         return pwCb.getPassword();
     }
