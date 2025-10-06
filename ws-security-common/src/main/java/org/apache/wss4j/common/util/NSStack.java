@@ -104,7 +104,7 @@ public class NSStack {
             LOG.trace("NSPop (" + stack.length + ")");
         }
     }
-
+    // Liberty Change Start: Backport 4.x
     /**
      * Return a copy of the current frame.  Returns null if none are present.
      */
@@ -118,6 +118,7 @@ public class NSStack {
         }
         return clone;
     }
+    // Liberty Change End
 
     /**
      * Remove all mappings from the current frame.

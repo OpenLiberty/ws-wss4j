@@ -35,21 +35,20 @@ public class EHCacheExpiry implements ExpiryPolicy<String, EHCacheValue> {
     /**
      * The default time to live in seconds (60 minutes)
      */
-    public static final long DEFAULT_TTL = 3600L;
+    public static long defaultTTL = 3600L;  // Liberty Change
 
     /**
      * The max time to live in seconds (12 hours)
      */
-    public static final long MAX_TTL = DEFAULT_TTL * 12L;
-
+    public long maxTTL = defaultTTL * 12L;   // Liberty Change
 
     @Override
     public Duration getExpiryForCreation(String s, EHCacheValue ehCacheValue) {
         Instant expiry = ehCacheValue.getExpiry();
         Instant now = Instant.now();
 
-        if (expiry == null || expiry.isBefore(now) || expiry.isAfter(now.plusSeconds(MAX_TTL))) {
-            return Duration.of(DEFAULT_TTL, ChronoUnit.SECONDS);
+        if (expiry == null || expiry.isBefore(now) || expiry.isAfter(now.plusSeconds(maxTTL))) {
+            return Duration.of(defaultTTL, ChronoUnit.SECONDS);
         }
 
         return Duration.of(expiry.toEpochMilli() - now.toEpochMilli(), ChronoUnit.MILLIS);
@@ -65,5 +64,13 @@ public class EHCacheExpiry implements ExpiryPolicy<String, EHCacheValue> {
         return null;
     }
 
+    // Liberty Change
+    public void setDefaultTTL(long ttl) {
+        defaultTTL = ttl;
+    }
+    public void setMaxTTL(long ttl) {
+        maxTTL = ttl;
+    }
+    // End Liberty Change
 
 }

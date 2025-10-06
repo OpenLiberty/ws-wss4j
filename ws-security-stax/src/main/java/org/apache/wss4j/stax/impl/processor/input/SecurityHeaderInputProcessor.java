@@ -86,7 +86,7 @@ public class SecurityHeaderInputProcessor extends AbstractInputProcessor {
             subInputProcessorChain.reset();
             xmlSecEvent = subInputProcessorChain.processHeaderEvent();
 
-            switch (xmlSecEvent.getEventType()) {
+            switch (xmlSecEvent.getEventType()) {   //NOPMD
                 case XMLStreamConstants.START_ELEMENT:
                     XMLSecStartElement xmlSecStartElement = xmlSecEvent.asStartElement();
                     int documentLevel = xmlSecStartElement.getDocumentLevel();
@@ -215,10 +215,12 @@ public class SecurityHeaderInputProcessor extends AbstractInputProcessor {
             return;
         }
         try {
+            // Liberty Change Start: Backport 4.x
             XMLSecurityHeaderHandler xmlSecurityHeaderHandler = clazz.getDeclaredConstructor().newInstance();
             xmlSecurityHeaderHandler.handle(inputProcessorChain, securityProperties, eventQueue, index);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new WSSecurityException(WSSecurityException.ErrorCode.INVALID_SECURITY, e);
+            // Liberty Change End
         } catch (WSSecurityException e) {
             throw e;
         } catch (XMLSecurityException e) {
