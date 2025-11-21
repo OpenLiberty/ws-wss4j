@@ -129,7 +129,7 @@ public class SignatureSTRParser implements STRParser {
         String valueType = secRef.getKeyIdentifierValueType();
         byte[] secretKey = STRParserUtil.getSecretKeyFromToken(secRef.getKeyIdentifierValue(), valueType,
                                                                WSPasswordCallback.SECRET_KEY, data);
-        if (secretKey == null) {
+        if (secretKey == null || secretKey.length == 0) {
             SamlAssertionWrapper samlAssertion =
                 STRParserUtil.getAssertionFromKeyIdentifier(
                     secRef, secRef.getElement(), data
@@ -138,8 +138,7 @@ public class SignatureSTRParser implements STRParser {
 
             SAMLKeyInfo samlKi =
                 SAMLUtil.getCredentialFromSubject(samlAssertion,
-                        new WSSSAMLKeyInfoProcessor(data),
-                        data.getSigVerCrypto(), data.getCallbackHandler());
+                        new WSSSAMLKeyInfoProcessor(data), data.getSigVerCrypto());
             X509Certificate[] foundCerts = samlKi.getCerts();
             if (foundCerts != null && foundCerts.length > 0) {
                 parserResult.setCerts(new X509Certificate[]{foundCerts[0]});
@@ -167,7 +166,7 @@ public class SignatureSTRParser implements STRParser {
             byte[] secretKey =
                 STRParserUtil.getSecretKeyFromToken(secRef.getKeyIdentifierValue(), valueType,
                                                     WSPasswordCallback.SECRET_KEY, data);
-            if (secretKey == null) {
+            if (secretKey == null || secretKey.length == 0) {
                 byte[] keyBytes = secRef.getSKIBytes();
                 List<WSSecurityEngineResult> resultsList =
                     data.getWsDocInfo().getResultsByTag(WSConstants.BST);
@@ -187,7 +186,7 @@ public class SignatureSTRParser implements STRParser {
             parserResult.setSecretKey(secretKey);
         } else {
             X509Certificate[] foundCerts = secRef.getKeyIdentifier(crypto);
-            if (foundCerts == null) {
+            if (foundCerts == null || foundCerts.length == 0) {
                 // The reference may be to a BST in the security header rather than in the keystore
                 if (SecurityTokenReference.SKI_URI.equals(valueType)) {
                     byte[] skiBytes = secRef.getSKIBytes();
@@ -196,7 +195,7 @@ public class SignatureSTRParser implements STRParser {
                     for (WSSecurityEngineResult bstResult : resultsList) {
                         X509Certificate[] certs =
                             (X509Certificate[])bstResult.get(WSSecurityEngineResult.TAG_X509_CERTIFICATES);
-                        if (certs != null
+                        if (certs != null && certs.length > 0
                             && Arrays.equals(skiBytes, crypto.getSKIBytesFromCert(certs[0]))) {
                             parserResult.setPrincipal((Principal)bstResult.get(WSSecurityEngineResult.TAG_PRINCIPAL));
                             foundCerts = certs;
@@ -210,7 +209,7 @@ public class SignatureSTRParser implements STRParser {
                     for (WSSecurityEngineResult bstResult : resultsList) {
                         X509Certificate[] certs =
                             (X509Certificate[])bstResult.get(WSSecurityEngineResult.TAG_X509_CERTIFICATES);
-                        if (certs != null) {
+                        if (certs != null && certs.length > 0) {
                             try {
                                 byte[] digest = KeyUtils.generateDigest(certs[0].getEncoded());
                                 if (Arrays.equals(org.apache.xml.security.utils.XMLUtils.decode(kiValue), digest)) {
@@ -227,7 +226,7 @@ public class SignatureSTRParser implements STRParser {
                     }
                 }
             }
-            if (foundCerts != null) {
+            if (foundCerts != null && foundCerts.length > 0) {
                 parserResult.setCerts(new X509Certificate[]{foundCerts[0]});
             }
         }
@@ -309,7 +308,7 @@ public class SignatureSTRParser implements STRParser {
                 );
             }
             X509Certificate[] foundCerts = keyInfo.getCerts();
-            if (foundCerts != null) {
+            if (foundCerts != null && foundCerts.length > 0) {
                 parserResult.setCerts(new X509Certificate[]{foundCerts[0]});
             }
             parserResult.setSecretKey(keyInfo.getSecret());
@@ -343,7 +342,7 @@ public class SignatureSTRParser implements STRParser {
                                                                    data);
             Principal principal = new CustomTokenPrincipal(uri);
 
-            if (secretKey == null) {
+            if (secretKey == null || secretKey.length == 0) {
                 Element token =
                     STRParserUtil.getTokenElement(strElement.getOwnerDocument(), wsDocInfo, data.getCallbackHandler(),
                                                   uri, reference.getValueType());
@@ -381,8 +380,7 @@ public class SignatureSTRParser implements STRParser {
                     } else {
                         samlAssertion = new SamlAssertionWrapper(processedToken);
                         samlAssertion.parseSubject(
-                            new WSSSAMLKeyInfoProcessor(data),
-                            data.getSigVerCrypto(), data.getCallbackHandler()
+                            new WSSSAMLKeyInfoProcessor(data), data.getSigVerCrypto()
                         );
                     }
                     STRParserUtil.checkSamlTokenBSPCompliance(secRef, samlAssertion, data.getBSPEnforcer());

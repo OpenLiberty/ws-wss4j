@@ -97,7 +97,7 @@ public class SecurityTokenRefSTRParser implements STRParser {
         STRParserUtil.checkSamlTokenBSPCompliance(secRef, samlAssertion, data.getBSPEnforcer());
         SAMLKeyInfo samlKi =
             SAMLUtil.getCredentialFromSubject(samlAssertion, new WSSSAMLKeyInfoProcessor(data),
-                    data.getSigVerCrypto(), data.getCallbackHandler());
+                    data.getSigVerCrypto());
         if (samlKi == null) {
             throw new WSSecurityException(
                 WSSecurityException.ErrorCode.FAILED_CHECK, "invalidSAMLToken",

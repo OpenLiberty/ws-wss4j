@@ -1,3 +1,6 @@
+# Eclipse
+/.classpath
+/.project
 .checkstyle
 .classpath
 .pmd
@@ -15,3 +18,14 @@ velocity.log
 # IntelliJ
 /.idea/
 **/*.iml
+
+
+# Maven
+*/target/
+/target/
+
+
+.pmd
+.pmdruleset.xml
+/.settings/
+.DS_Store

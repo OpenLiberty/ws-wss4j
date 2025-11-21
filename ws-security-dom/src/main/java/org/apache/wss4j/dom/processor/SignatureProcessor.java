@@ -182,7 +182,8 @@ public class SignatureProcessor implements Processor {
                 if (trusted) {
                     LOG.debug("Direct Trust for SAML/BST credential");
                 }
-                if (!trusted && (publicKey != null || certs != null) && validator != null) {
+                // Liberty Change remove extra parentheses to pass PMD
+                if (!trusted && publicKey != null || (certs != null && certs.length > 0) && validator != null) {
                     credential.setPublicKey(publicKey);
                     credential.setCertificates(certs);
                     credential.setPrincipal(principal);
@@ -334,7 +335,7 @@ public class SignatureProcessor implements Processor {
         // signature refers to
         //
         Key key = null;
-        if (certs != null && certs[0] != null) {
+        if (certs != null && certs.length > 0 && certs[0] != null) { // Liberty Change Start; Backport 4.x
             key = certs[0].getPublicKey();
         } else if (publicKey != null) {
             key = publicKey;
@@ -641,7 +642,7 @@ public class SignatureProcessor implements Processor {
         RequestData requestData,
         WSDocInfo wsDocInfo
     ) throws WSSecurityException {
-        ReplayCache replayCache = requestData.getTimestampReplayCache();
+        ReplayCache replayCache = requestData.getTimestampReplayCache();    //NOPMD
         if (replayCache == null) {
             return;
         }

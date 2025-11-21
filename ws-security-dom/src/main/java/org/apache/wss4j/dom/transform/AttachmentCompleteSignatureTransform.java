@@ -70,7 +70,7 @@ public class AttachmentCompleteSignatureTransform extends AttachmentContentSigna
         try {
             OutputStream outputStream = os;
             if (outputStream == null) {
-                outputStream = new ByteArrayOutputStream();
+                outputStream = new ByteArrayOutputStream(); //NOPMD
             }
             AttachmentUtils.canonizeMimeHeaders(os, attachment.getHeaders());
             processAttachment(context, os, attachmentUri, attachment);
@@ -83,7 +83,7 @@ public class AttachmentCompleteSignatureTransform extends AttachmentContentSigna
                         ),
                         attachmentUri, mimeType);
             }
-            return null;
+            return null; // Liberty Change Start; Backport 4.x
         } catch (IOException e) {
             throw new TransformException(e);
         }

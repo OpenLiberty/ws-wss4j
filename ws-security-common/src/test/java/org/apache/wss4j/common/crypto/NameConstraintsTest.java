@@ -44,7 +44,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
@@ -129,8 +128,8 @@ public class NameConstraintsTest {
         Merlin merlin = new Merlin();
         X509Certificate[] certificates = getTestCertificateChain(INTERMEDIATE_SIGNED);
 
-        assertNull(merlin.getNameConstraints(certificates[0]));
-        assertNull(merlin.getNameConstraints(certificates[1]));
+        assertThat(merlin.getNameConstraints(certificates[0]).length, equalTo(0));
+        assertThat(merlin.getNameConstraints(certificates[1]).length, equalTo(0));
 
         byte[] nameConstraints = merlin.getNameConstraints(certificates[2]);
         assertNotNull(nameConstraints);

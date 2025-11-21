@@ -43,7 +43,7 @@ public class EHCacheExpiryTest {
                         new EHCacheValue("xyz", null));
         assertNotNull(expiryForCreation);
 
-        assertEquals(EHCacheExpiry.DEFAULT_TTL, expiryForCreation.getSeconds());
+        assertEquals(EHCacheExpiry.defaultTTL, expiryForCreation.getSeconds());
     }
 
     @Test
@@ -83,7 +83,7 @@ public class EHCacheExpiryTest {
                         new EHCacheValue("xyz", Instant.now().minusSeconds(30L)));
         assertNotNull(expiryForCreation);
 
-        assertEquals(EHCacheExpiry.DEFAULT_TTL, expiryForCreation.getSeconds());
+        assertEquals(EHCacheExpiry.defaultTTL, expiryForCreation.getSeconds());
     }
 
     @Test
@@ -95,6 +95,6 @@ public class EHCacheExpiryTest {
                         new EHCacheValue("xyz", Instant.now().plus(14, ChronoUnit.HOURS)));
         assertNotNull(expiryForCreation);
 
-        assertEquals(EHCacheExpiry.DEFAULT_TTL, expiryForCreation.getSeconds());
+        assertEquals(EHCacheExpiry.defaultTTL, expiryForCreation.getSeconds());
     }
 }
